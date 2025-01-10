@@ -5,6 +5,9 @@ import cookieParser from 'cookie-parser';
 dotenv.config();
 import connectDB from './config/db.js';
 import productRoutes from './routes/productRoutes.js';
+import brandRoutes from './routes/brandRoutes.js';
+import categoryRoutes from './routes/categoryRoutes.js';
+
 import userRoutes from './routes/userRoutes.js';
 import orderRoutes from './routes/orderRoutes.js';
 import uploadRoutes from './routes/uploadRoutes.js';
@@ -24,6 +27,8 @@ app.use('/api/products', productRoutes);
 app.use('/api/users', userRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/upload', uploadRoutes);
+app.use('/api/brands', brandRoutes);
+app.use('/api/categories', categoryRoutes);
 
 app.get('/api/config/paypal', (req, res) =>
   res.send({ clientId: process.env.PAYPAL_CLIENT_ID })

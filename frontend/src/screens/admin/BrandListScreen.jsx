@@ -3,28 +3,23 @@ import { FaEdit, FaPlus, FaTrash } from 'react-icons/fa';
 import { Link, useParams } from 'react-router-dom';
 import Message from '../../components/Message';
 import Loader from '../../components/Loader';
-import Paginate from '../../components/Paginate';
 import {
-  useGetProductsQuery,
-  useDeleteProductMutation,
-  useCreateProductMutation,
-} from '../../slices/productsApiSlice';
+  useGetBrandsQuery,
+  useDeleteBrandMutation,
+  useCreateBrandMutation,
+} from '../../slices/brandApiSlice';
 import { toast } from 'react-toastify';
 
-const ProductListScreen = () => {
-  const { pageNumber } = useParams();
+const BrandListScreen = () => {
+  const { data, isLoading, error, refetch } = useGetBrandsQuery({});
+  console.log(data);
 
-  const { data, isLoading, error, refetch } = useGetProductsQuery({
-    pageNumber,
-  });
-
-  const [deleteProduct, { isLoading: loadingDelete }] =
-    useDeleteProductMutation();
+  const [deleteBrand, { isLoading: loadingBrand }] = useDeleteBrandMutation();
 
   const deleteHandler = async (id) => {
     if (window.confirm('Are you sure')) {
       try {
-        await deleteProduct(id);
+        await deleteBrand(id);
         refetch();
       } catch (err) {
         toast.error(err?.data?.message || err.error);
@@ -32,13 +27,12 @@ const ProductListScreen = () => {
     }
   };
 
-  const [createProduct, { isLoading: loadingCreate }] =
-    useCreateProductMutation();
+  const [createBrand, { isLoading: loadingCreate }] = useCreateBrandMutation();
 
-  const createProductHandler = async () => {
-    if (window.confirm('Are you sure you want to create a new product?')) {
+  const createBrandHandler = async () => {
+    if (window.confirm('Are you sure you want to create a new category?')) {
       try {
-        await createProduct();
+        await createBrand();
         refetch();
       } catch (err) {
         toast.error(err?.data?.message || err.error);
@@ -50,17 +44,17 @@ const ProductListScreen = () => {
     <>
       <Row className='align-items-center'>
         <Col>
-          <h1>Products</h1>
+          <h1>Brands</h1>
         </Col>
         <Col className='text-end'>
-          <Button className='my-3' onClick={createProductHandler}>
-            <FaPlus /> Create Product
+          <Button className='my-3' onClick={createBrandHandler}>
+            <FaPlus /> Create Brand
           </Button>
         </Col>
       </Row>
 
       {loadingCreate && <Loader />}
-      {loadingDelete && <Loader />}
+      {loadingBrand && <Loader />}
       {isLoading ? (
         <Loader />
       ) : error ? (
@@ -72,26 +66,18 @@ const ProductListScreen = () => {
               <tr>
                 <th>ID</th>
                 <th>NAME</th>
-                <th>PRICE</th>
-                <th>DISCOUNTED PRICE</th>
-                <th>CATEGORY</th>
-                <th>BRAND</th>
                 <th></th>
               </tr>
             </thead>
             <tbody>
-              {data.products.map((product) => (
-                <tr key={product._id}>
-                  <td>{product._id}</td>
-                  <td>{product.name}</td>
-                  <td>${product.price}</td>
-                  <td>${product.discountedPrice}</td>
-                  <td>{product.category}</td>
-                  <td>{product.brand}</td>
+              {data.map((brand) => (
+                <tr key={brand._id}>
+                  <td>{brand._id}</td>
+                  <td>{brand.name}</td>
                   <td>
                     <Button
                       as={Link}
-                      to={`/admin/product/${product._id}/edit`}
+                      to={`/admin/brand/${brand._id}/edit`}
                       variant='light'
                       className='btn-sm mx-2'
                     >
@@ -100,7 +86,7 @@ const ProductListScreen = () => {
                     <Button
                       variant='danger'
                       className='btn-sm'
-                      onClick={() => deleteHandler(product._id)}
+                      onClick={() => deleteHandler(brand._id)}
                     >
                       <FaTrash style={{ color: 'white' }} />
                     </Button>
@@ -109,11 +95,10 @@ const ProductListScreen = () => {
               ))}
             </tbody>
           </Table>
-          <Paginate pages={data.pages} page={data.page} isAdmin={true} />
         </>
       )}
     </>
   );
 };
 
-export default ProductListScreen;
+export default BrandListScreen;

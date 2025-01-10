@@ -35,21 +35,22 @@ const Header = () => {
       <Navbar bg='primary' variant='dark' expand='lg' collapseOnSelect>
         <Container>
           <Navbar.Brand as={Link} to='/'>
-            <img src={logo} alt='ProShop' />
-            ProShop
+            Shopping Mart
           </Navbar.Brand>
           <Navbar.Toggle aria-controls='basic-navbar-nav' />
           <Navbar.Collapse id='basic-navbar-nav'>
             <Nav className='ms-auto'>
-              <SearchBox />
-              <Nav.Link as={Link} to='/cart'>
-                <FaShoppingCart /> Cart
-                {cartItems.length > 0 && (
-                  <Badge pill bg='success' style={{ marginLeft: '5px' }}>
-                    {cartItems.reduce((a, c) => a + c.qty, 0)}
-                  </Badge>
-                )}
-              </Nav.Link>
+              {!userInfo?.isAdmin ? <SearchBox /> : null}
+              {!userInfo?.isAdmin ? (
+                <Nav.Link as={Link} to='/cart'>
+                  <FaShoppingCart /> Cart
+                  {cartItems.length > 0 && (
+                    <Badge pill bg='success' style={{ marginLeft: '5px' }}>
+                      {cartItems.reduce((a, c) => a + c.qty, 0)}
+                    </Badge>
+                  )}
+                </Nav.Link>
+              ) : null}
               {userInfo ? (
                 <>
                   <NavDropdown title={userInfo.name} id='username'>
@@ -67,7 +68,7 @@ const Header = () => {
                 </Nav.Link>
               )}
 
-              {/* Admin Links */}
+              {/* Admin Links
               {userInfo && userInfo.isAdmin && (
                 <NavDropdown title='Admin' id='adminmenu'>
                   <NavDropdown.Item as={Link} to='/admin/productlist'>
@@ -80,7 +81,7 @@ const Header = () => {
                     Users
                   </NavDropdown.Item>
                 </NavDropdown>
-              )}
+              )} */}
             </Nav>
           </Navbar.Collapse>
         </Container>

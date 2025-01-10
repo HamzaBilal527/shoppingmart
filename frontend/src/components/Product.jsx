@@ -23,7 +23,16 @@ const Product = ({ product }) => {
           />
         </Card.Text>
 
-        <Card.Text as='h3'>${product.price}</Card.Text>
+        <Card.Text as='h3' style={{ marginTop: '10px' }}>
+          ${product.discountedPrice}
+        </Card.Text>
+
+        <Card.Text
+          as='h5'
+          style={{ textDecoration: 'line-through', color: '#999' }}
+        >
+          ${product.price}
+        </Card.Text>
       </Card.Body>
     </Card>
   );

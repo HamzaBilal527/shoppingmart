@@ -1,20 +1,35 @@
 import path from 'path';
 import express from 'express';
 import multer from 'multer';
+import { CloudinaryStorage } from 'multer-storage-cloudinary';
+import { v2 as cloudinary } from 'cloudinary';
 
 const router = express.Router();
 
-const storage = multer.diskStorage({
-  destination(req, file, cb) {
-    cb(null, 'uploads/');
-  },
-  filename(req, file, cb) {
-    cb(
-      null,
-      `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
-    );
+cloudinary.config({
+  cloudinary_url: process.env.CLOUDINARY_URL,
+});
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: 'shoppingmartbiz',
+    allowed_formats: ['jpg', 'jpeg', 'png', 'webp'],
+    unique_filename: true,
   },
 });
+
+// const storage = multer.diskStorage({
+//   destination(req, file, cb) {
+//     cb(null, 'uploads/');
+//   },
+//   filename(req, file, cb) {
+//     cb(
+//       null,
+//       `${file.fieldname}-${Date.now()}${path.extname(file.originalname)}`
+//     );
+//   },
+// });
 
 function fileFilter(req, file, cb) {
   const filetypes = /jpe?g|png|webp/;
@@ -41,7 +56,7 @@ router.post('/', (req, res) => {
 
     res.status(200).send({
       message: 'Image uploaded successfully',
-      image: `/${req.file.path}`,
+      image: req.file.path,
     });
   });
 });

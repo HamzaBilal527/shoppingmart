@@ -11,17 +11,37 @@ import {
   useUploadProductImageMutation,
 } from '../../slices/productsApiSlice';
 
+import { useGetBrandsQuery } from '../../slices/brandApiSlice';
+import { useGetCategoriesQuery } from '../../slices/categoryApiSlice';
+
 const ProductEditScreen = () => {
   const { id: productId } = useParams();
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState(0);
+  const [discountedPrice, setDiscountedPrice] = useState(0);
+
   const [image, setImage] = useState('');
   const [brand, setBrand] = useState('');
   const [category, setCategory] = useState('');
   const [countInStock, setCountInStock] = useState(0);
   const [description, setDescription] = useState('');
 
+  const {
+    data: brands,
+    isLoading: brandLoading,
+    error: brandError,
+    refetch: brandRefetch,
+  } = useGetBrandsQuery({});
+
+  const {
+    data: categories,
+    isLoading: categoryLoading,
+    error: categoryError,
+    refetch: categoryRefetch,
+  } = useGetCategoriesQuery({});
+
+  console.log(brands);
   const {
     data: product,
     isLoading,
@@ -44,6 +64,7 @@ const ProductEditScreen = () => {
         productId,
         name,
         price,
+        discountedPrice,
         image,
         brand,
         category,
@@ -52,7 +73,9 @@ const ProductEditScreen = () => {
       }).unwrap(); // NOTE: here we need to unwrap the Promise to catch any rejection in our catch block
       toast.success('Product updated');
       refetch();
-      navigate('/admin/productlist');
+      brandRefetch();
+      categoryRefetch();
+      navigate('/admin/productlist', { replace: true });
     } catch (err) {
       toast.error(err?.data?.message || err.error);
     }
@@ -62,6 +85,7 @@ const ProductEditScreen = () => {
     if (product) {
       setName(product.name);
       setPrice(product.price);
+      setDiscountedPrice(product.discountedPrice);
       setImage(product.image);
       setBrand(product.brand);
       setCategory(product.category);
@@ -89,11 +113,17 @@ const ProductEditScreen = () => {
       </Link>
       <FormContainer>
         <h1>Edit Product</h1>
-        {loadingUpdate && <Loader />}
+        {(loadingUpdate || brandLoading || categoryLoading) && <Loader />}
+
         {isLoading ? (
           <Loader />
-        ) : error ? (
-          <Message variant='danger'>{error.data.message}</Message>
+        ) : error || brandError || categoryError ? (
+          <Message variant='danger'>
+            {error?.data?.message ||
+              brandError?.data?.message ||
+              categoryError?.data?.message ||
+              'An unkown error occurred'}
+          </Message>
         ) : (
           <Form onSubmit={submitHandler}>
             <Form.Group controlId='name'>
@@ -116,6 +146,16 @@ const ProductEditScreen = () => {
               ></Form.Control>
             </Form.Group>
 
+            <Form.Group controlId='discountedPrice'>
+              <Form.Label>Discounted Price</Form.Label>
+              <Form.Control
+                type='number'
+                placeholder='Enter discounted price'
+                value={discountedPrice}
+                onChange={(e) => setDiscountedPrice(e.target.value)}
+              ></Form.Control>
+            </Form.Group>
+
             <Form.Group controlId='image'>
               <Form.Label>Image</Form.Label>
               <Form.Control
@@ -135,11 +175,17 @@ const ProductEditScreen = () => {
             <Form.Group controlId='brand'>
               <Form.Label>Brand</Form.Label>
               <Form.Control
-                type='text'
-                placeholder='Enter brand'
+                as='select'
                 value={brand}
                 onChange={(e) => setBrand(e.target.value)}
-              ></Form.Control>
+              >
+                <option value=''>Select a Brand</option>
+                {brands.map((b) => (
+                  <option key={b._id} value={b.name}>
+                    {b.name}
+                  </option>
+                ))}
+              </Form.Control>
             </Form.Group>
 
             <Form.Group controlId='countInStock'>
@@ -155,11 +201,17 @@ const ProductEditScreen = () => {
             <Form.Group controlId='category'>
               <Form.Label>Category</Form.Label>
               <Form.Control
-                type='text'
-                placeholder='Enter category'
+                as='select'
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
-              ></Form.Control>
+              >
+                <option value=''>Select a Category</option>
+                {categories.map((c) => (
+                  <option key={c._id} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </Form.Control>
             </Form.Group>
 
             <Form.Group controlId='description'>
