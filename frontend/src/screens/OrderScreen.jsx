@@ -1,12 +1,23 @@
 import { useEffect } from 'react';
 import { Link, useParams } from 'react-router-dom';
-import { Row, Col, ListGroup, Image, Card, Button } from 'react-bootstrap';
+import {
+  Row,
+  Col,
+  ListGroup,
+  Image,
+  Card,
+  Button,
+  Breadcrumb,
+} from 'react-bootstrap';
 import { PayPalButtons, usePayPalScriptReducer } from '@paypal/react-paypal-js';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import Message from '../components/Message';
 import Loader from '../components/Loader';
 import {
+  useConfirmOrderMutation,
+  useProcessOrderMutation,
+  useShipOrderMutation,
   useDeliverOrderMutation,
   useGetOrderDetailsQuery,
   useGetPaypalClientIdQuery,
@@ -25,12 +36,28 @@ const OrderScreen = () => {
 
   const [payOrder, { isLoading: loadingPay }] = usePayOrderMutation();
 
+  const [confirmOrder, { isLoading: loadingConfirm }] =
+    useConfirmOrderMutation();
+  const [processOrder, { isLoading: loadingProcess }] =
+    useProcessOrderMutation();
+  const [shipOrder, { isLoading: loadingShip }] = useShipOrderMutation();
   const [deliverOrder, { isLoading: loadingDeliver }] =
     useDeliverOrderMutation();
 
+  const statuses = [
+    { name: 'Confirmed', isDone: order?.isConfirmed, date: order?.confirmedAt },
+    {
+      name: 'Processing',
+      isDone: order?.isProcessed,
+      date: order?.processedAt,
+    },
+    { name: 'Shipped', isDone: order?.isShipped, date: order?.shippedAt },
+    { name: 'Delivered', isDone: order?.isDelivered, date: order?.deliveredAt },
+  ];
   const { userInfo } = useSelector((state) => state.auth);
 
   const [{ isPending }, paypalDispatch] = usePayPalScriptReducer();
+  console.log(userInfo);
 
   const {
     data: paypal,
@@ -96,6 +123,18 @@ const OrderScreen = () => {
       });
   }
 
+  const confirmHandler = async () => {
+    await confirmOrder(orderId);
+    refetch();
+  };
+  const processHandler = async () => {
+    await processOrder(orderId);
+    refetch();
+  };
+  const shipHandler = async () => {
+    await shipOrder(orderId);
+    refetch();
+  };
   const deliverHandler = async () => {
     await deliverOrder(orderId);
     refetch();
@@ -107,7 +146,7 @@ const OrderScreen = () => {
     <Message variant='danger'>{error.data.message}</Message>
   ) : (
     <>
-      <h1>Order {order._id}</h1>
+      <h1>Order {order._id.toString().slice(-5)}</h1>
       <Row>
         <Col md={8}>
           <ListGroup variant='flush'>
@@ -126,13 +165,53 @@ const OrderScreen = () => {
                 {order.shippingAddress.postalCode},{' '}
                 {order.shippingAddress.country}
               </p>
+              {/* {order.isConfirmed ? (
+                <Message variant='success'>
+                  Delivered on {order.confirmedAt}
+                </Message>
+              ) : (
+                <Message variant='danger'>Not Confirmed</Message>
+              )}
+              {order.isProcessed ? (
+                <Message variant='success'>
+                  Processed on {order.processedAt}
+                </Message>
+              ) : (
+                <Message variant='danger'>Not Processed</Message>
+              )}
+              {order.isShipped ? (
+                <Message variant='success'>
+                  Delivered on {order.shippedAt}
+                </Message>
+              ) : (
+                <Message variant='danger'>Not Shipped</Message>
+              )}
               {order.isDelivered ? (
                 <Message variant='success'>
                   Delivered on {order.deliveredAt}
                 </Message>
               ) : (
                 <Message variant='danger'>Not Delivered</Message>
-              )}
+              )} */}
+              <Breadcrumb>
+                {statuses.map((status, index) => (
+                  <Breadcrumb.Item
+                    key={index}
+                    active={!status.isDone} // Mark as active if not done
+                    style={{
+                      color: status.isDone ? '#0d6efd' : '#6c757d', // Blue for done, gray otherwise
+                      fontWeight: status.isDone ? 'bold' : 'normal',
+                    }}
+                  >
+                    {status.name}
+                    {/* {status.isDone && status.date && (
+                      <small style={{ display: 'block', fontSize: '0.5rem' }}>
+                        {status.date}
+                      </small>
+                    )} */}
+                  </Breadcrumb.Item>
+                ))}
+              </Breadcrumb>
             </ListGroup.Item>
 
             <ListGroup.Item>
@@ -211,7 +290,7 @@ const OrderScreen = () => {
                   <Col>${order.totalPrice}</Col>
                 </Row>
               </ListGroup.Item>
-              {!order.isPaid && (
+              {!order.isPaid && !userInfo.isAdmin && (
                 <ListGroup.Item>
                   {loadingPay && <Loader />}
 
@@ -239,22 +318,111 @@ const OrderScreen = () => {
                 </ListGroup.Item>
               )}
 
-              {loadingDeliver && <Loader />}
+              {loadingConfirm &&
+                loadingProcess &&
+                loadingShip &&
+                loadingDeliver && <Loader />}
 
-              {userInfo &&
-                userInfo.isAdmin &&
-                order.isPaid &&
-                !order.isDelivered && (
-                  <ListGroup.Item>
+              {userInfo && userInfo.isAdmin && !order.isConfirmed && (
+                <ListGroup.Item
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column', // Stack buttons vertically
+                    alignItems: 'center', // Center align buttons horizontally
+                  }}
+                >
+                  {!loadingConfirm ? (
                     <Button
                       type='button'
-                      className='btn btn-block'
+                      className='btn btn-block my-2 px-4 py-2'
+                      onClick={confirmHandler}
+                      disabled={!order.isPaid}
+                    >
+                      Mark As Confirmed
+                    </Button>
+                  ) : (
+                    <Loader />
+                  )}
+                </ListGroup.Item>
+              )}
+
+              {userInfo && userInfo.isAdmin && !order.isProcessed && (
+                <ListGroup.Item
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column', // Stack buttons vertically
+                    alignItems: 'center', // Center align buttons horizontally
+                  }}
+                >
+                  {!loadingProcess ? (
+                    <Button
+                      type='button'
+                      className='btn btn-block my-2 px-4 py-2'
+                      onClick={processHandler}
+                      disabled={!order.isPaid || !order.isConfirmed}
+                    >
+                      Mark As Processing
+                    </Button>
+                  ) : (
+                    <Loader />
+                  )}
+                </ListGroup.Item>
+              )}
+
+              {userInfo && userInfo.isAdmin && !order.isShipped && (
+                <ListGroup.Item
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column', // Stack buttons vertically
+                    alignItems: 'center', // Center align buttons horizontally
+                  }}
+                >
+                  {!loadingShip ? (
+                    <Button
+                      type='button'
+                      className='btn btn-block my-2 px-4 py-2'
+                      onClick={shipHandler}
+                      disabled={
+                        !order.isPaid ||
+                        !order.isConfirmed ||
+                        !order.isProcessed
+                      }
+                    >
+                      Mark As Shipped
+                    </Button>
+                  ) : (
+                    <Loader />
+                  )}
+                </ListGroup.Item>
+              )}
+
+              {userInfo && userInfo.isAdmin && !order.isDelivered && (
+                <ListGroup.Item
+                  style={{
+                    display: 'flex',
+                    flexDirection: 'column', // Stack buttons vertically
+                    alignItems: 'center', // Center align buttons horizontally
+                  }}
+                >
+                  {!loadingDeliver ? (
+                    <Button
+                      type='button'
+                      className='btn btn-block my-2 px-4 py-2'
                       onClick={deliverHandler}
+                      disabled={
+                        !order.isPaid ||
+                        !order.isConfirmed ||
+                        !order.isProcessed ||
+                        !order.isShipped
+                      }
                     >
                       Mark As Delivered
                     </Button>
-                  </ListGroup.Item>
-                )}
+                  ) : (
+                    <Loader />
+                  )}
+                </ListGroup.Item>
+              )}
             </ListGroup>
           </Card>
         </Col>

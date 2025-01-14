@@ -2,7 +2,11 @@ import asyncHandler from '../middleware/asyncHandler.js';
 import Order from '../models/orderModel.js';
 import Product from '../models/productModel.js';
 import { calcPrices } from '../utils/calcPrices.js';
+import formatOrderDetails from '../utils/formatOrderDetails.js';
+import generateOrderDetails from '../utils/generateOrderDetails.js';
+import getUserDetails from '../utils/getUserName.js';
 import { verifyPayPalPayment, checkIfNewTransaction } from '../utils/paypal.js';
+import sendEmail from '../utils/sendMail.js';
 
 // @desc    Create new order
 // @route   POST /api/orders
@@ -23,6 +27,18 @@ const addOrderItems = asyncHandler(async (req, res) => {
     const itemsFromDB = await Product.find({
       _id: { $in: orderItems.map((x) => x._id) },
     });
+
+    const outOfStock = itemsFromDB.find(
+      (itemsFromDB) => itemsFromDB.countInStock === 0
+    );
+    const outOfStockId = outOfStock?._id.toString();
+
+    const matchingIds = orderItems.map((orderItem) => orderItem._id);
+
+    if (matchingIds.includes(outOfStockId)) {
+      res.status(404);
+      throw new Error(`${outOfStock.name} just went out of stock`);
+    }
 
     // map over the order items and use the price from our items from database
     const dbOrderItems = orderItems.map((itemFromClient) => {
@@ -53,6 +69,24 @@ const addOrderItems = asyncHandler(async (req, res) => {
     });
 
     const createdOrder = await order.save();
+
+    await Promise.all(
+      dbOrderItems.map(async (dbOrderItem) => {
+        const productFromDb = dbOrderItem.product;
+        const product = await Product.findById(productFromDb);
+        const productsInStock = product.countInStock;
+        const orderQuantity = dbOrderItem.qty;
+        product.countInStock = productsInStock - orderQuantity;
+        await product.save();
+      })
+    );
+
+    const orderDetailsText = await formatOrderDetails(order);
+    await sendEmail({
+      to: process.env.SUPER_ADMIN,
+      subject: 'New Order Recieved',
+      text: orderDetailsText,
+    });
 
     res.status(201).json(createdOrder);
   }
@@ -121,17 +155,111 @@ const updateOrderToPaid = asyncHandler(async (req, res) => {
   }
 });
 
+// @desc    Update order to confirmed
+// @route   GET /api/orders/:id/confirmed
+// @access  Private/Admin
+const updateOrderToConfirmed = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  const user = await getUserDetails(order.user.toString());
+
+  if (order) {
+    order.isConfirmed = true;
+    order.confirmedAt = Date.now();
+
+    const updatedOrder = await order.save();
+
+    const statusText = 'has been confirmed.';
+    const emailMessage = await generateOrderDetails(updatedOrder, statusText);
+    await sendEmail({
+      to: user.email,
+      subject: 'Order Confirmation',
+      text: emailMessage,
+    });
+
+    res.json(updatedOrder);
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+});
+
+// @desc    Update order to processed
+// @route   GET /api/orders/:id/processed
+// @access  Private/Admin
+const updateOrderToProcessed = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  const user = await getUserDetails(order.user.toString());
+
+  if (order) {
+    order.isProcessed = true;
+    order.processedAt = Date.now();
+
+    const updatedOrder = await order.save();
+
+    const statusText = 'is being processed for shipping.';
+    const emailMessage = await generateOrderDetails(updatedOrder, statusText);
+    await sendEmail({
+      to: user.email,
+      subject: 'Order Processing',
+      text: emailMessage,
+    });
+
+    res.json(updatedOrder);
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+});
+
+// @desc    Update order to shipped
+// @route   GET /api/orders/:id/shipped
+// @access  Private/Admin
+const updateOrderToShipped = asyncHandler(async (req, res) => {
+  const order = await Order.findById(req.params.id);
+  const user = await getUserDetails(order.user.toString());
+
+  if (order) {
+    order.isShipped = true;
+    order.shippedAt = Date.now();
+
+    const updatedOrder = await order.save();
+
+    const statusText =
+      'has been been delivered to the courier services for shipping. And you will recieve it within 2 to 5 working days.';
+    const emailMessage = await generateOrderDetails(updatedOrder, statusText);
+    await sendEmail({
+      to: user.email,
+      subject: 'Order Shipped',
+      text: emailMessage,
+    });
+
+    res.json(updatedOrder);
+  } else {
+    res.status(404);
+    throw new Error('Order not found');
+  }
+});
+
 // @desc    Update order to delivered
 // @route   GET /api/orders/:id/deliver
 // @access  Private/Admin
 const updateOrderToDelivered = asyncHandler(async (req, res) => {
   const order = await Order.findById(req.params.id);
+  const user = await getUserDetails(order.user.toString());
 
   if (order) {
     order.isDelivered = true;
     order.deliveredAt = Date.now();
 
     const updatedOrder = await order.save();
+
+    const statusText = 'has been been delivered to your address.';
+    const emailMessage = await generateOrderDetails(updatedOrder, statusText);
+    await sendEmail({
+      to: user.email,
+      subject: 'Order Delievered',
+      text: emailMessage,
+    });
 
     res.json(updatedOrder);
   } else {
@@ -153,6 +281,9 @@ export {
   getMyOrders,
   getOrderById,
   updateOrderToPaid,
+  updateOrderToConfirmed,
+  updateOrderToProcessed,
+  updateOrderToShipped,
   updateOrderToDelivered,
   getOrders,
 };

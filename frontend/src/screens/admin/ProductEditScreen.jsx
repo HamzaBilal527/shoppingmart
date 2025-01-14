@@ -19,7 +19,6 @@ const ProductEditScreen = () => {
 
   const [name, setName] = useState('');
   const [price, setPrice] = useState(0);
-  const [discountedPrice, setDiscountedPrice] = useState(0);
 
   const [image, setImage] = useState('');
   const [brand, setBrand] = useState('');
@@ -41,7 +40,6 @@ const ProductEditScreen = () => {
     refetch: categoryRefetch,
   } = useGetCategoriesQuery({});
 
-  console.log(brands);
   const {
     data: product,
     isLoading,
@@ -64,7 +62,6 @@ const ProductEditScreen = () => {
         productId,
         name,
         price,
-        discountedPrice,
         image,
         brand,
         category,
@@ -85,7 +82,6 @@ const ProductEditScreen = () => {
     if (product) {
       setName(product.name);
       setPrice(product.price);
-      setDiscountedPrice(product.discountedPrice);
       setImage(product.image);
       setBrand(product.brand);
       setCategory(product.category);
@@ -146,16 +142,6 @@ const ProductEditScreen = () => {
               ></Form.Control>
             </Form.Group>
 
-            <Form.Group controlId='discountedPrice'>
-              <Form.Label>Discounted Price</Form.Label>
-              <Form.Control
-                type='number'
-                placeholder='Enter discounted price'
-                value={discountedPrice}
-                onChange={(e) => setDiscountedPrice(e.target.value)}
-              ></Form.Control>
-            </Form.Group>
-
             <Form.Group controlId='image'>
               <Form.Label>Image</Form.Label>
               <Form.Control
@@ -180,7 +166,7 @@ const ProductEditScreen = () => {
                 onChange={(e) => setBrand(e.target.value)}
               >
                 <option value=''>Select a Brand</option>
-                {brands.map((b) => (
+                {brands?.map((b) => (
                   <option key={b._id} value={b.name}>
                     {b.name}
                   </option>
@@ -206,7 +192,7 @@ const ProductEditScreen = () => {
                 onChange={(e) => setCategory(e.target.value)}
               >
                 <option value=''>Select a Category</option>
-                {categories.map((c) => (
+                {categories?.map((c) => (
                   <option key={c._id} value={c.name}>
                     {c.name}
                   </option>

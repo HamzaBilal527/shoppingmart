@@ -12,7 +12,6 @@ import { toast } from 'react-toastify';
 
 const BrandListScreen = () => {
   const { data, isLoading, error, refetch } = useGetBrandsQuery({});
-  console.log(data);
 
   const [deleteBrand, { isLoading: loadingBrand }] = useDeleteBrandMutation();
 

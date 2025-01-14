@@ -22,7 +22,6 @@ const BrandEditScreen = () => {
     error,
   } = useGetBrandDetailsQuery(brandId);
 
-  console.log(brand);
   const [updateBrand, { isLoading: loadingUpdate }] = useUpdateBrandMutation();
 
   const navigate = useNavigate();
