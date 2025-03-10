@@ -1,6 +1,6 @@
 <h1 align="center" id="title">Shopping Mart</h1>
 
-<p align="center"><img src="https://ibb.co/TRq7K7f" alt="project-image"></p>
+<p align="center"><img src="https://i.ibb.co/1KJPsPg/shopping-mart-1.png" alt="project-image"></p>
 
 <p id="description">This project is created by using MERN Stack. This is the frontend of the full stack app.</p>
 
