@@ -6,11 +6,11 @@
 
 <h2>Project Screenshots:</h2>
 
-<p align="center"><img src="https://i.ibb.co/SQBV56f/pandoc-2.png" alt="project-screenshot"></p>
+<p align="center"><img src="https://i.ibb.co/VVWP61Y/shopping-mart-2.png" alt="project-screenshot"></p>
 
-<p align="center"><img src="https://i.ibb.co/cNTPrXV/pandoc-3.png" alt="project-screenshot"></p>
+<p align="center"><img src="https://i.ibb.co/NWg67sY/shopping-mart-3.png" alt="project-screenshot"></p>
 
-<p align="center"><img src="https://i.ibb.co/0VpTBX9/pandoc-4.png" alt="project-screenshot"></p>
+<p align="center"><img src="https://i.ibb.co/RHbyCbg/shopping-mart-4.png" alt="project-screenshot"></p>
 
 <h2>🛠️ Installation Steps:</h2>
 
@@ -23,7 +23,7 @@ Node Npm Git
 <p>2. Clone Repository</p>
 
 ```
-https://github.com/HamzaBilal527/pandoc.git
+https://github.com/HamzaBilal527/shoppingmart.git
 ```
 
 <p>3. Installations</p>
