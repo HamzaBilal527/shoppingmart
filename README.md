@@ -8,7 +8,7 @@
 
 <p align="center"><img src="https://i.ibb.co/Fq7qdcV3/shopping-mart-2.png" alt="project-screenshot"></p>
 
-<p align="center"><img src="https://i.ibb.co/NWg67sY/shopping-mart-3.png" alt="project-screenshot"></p>
+<p align="center"><img src="https://i.ibb.co/sdDS0VVS/shopping-mart-3.png" alt="project-screenshot"></p>
 
 <p align="center"><img src="https://i.ibb.co/gF7hRW8W/shopping-mart-4.png" alt="project-screenshot"></p>
 
