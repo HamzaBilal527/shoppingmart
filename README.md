@@ -2,7 +2,7 @@
 
 <p align="center"><img src="https://i.ibb.co/R4QjRTFS/shopping-mart-1.png" alt="project-image"></p>
 
-<p id="description">This project is created by using MERN Stack. This is the frontend of the full stack app.</p>
+<p id="description">This project is created by using MERN Stack. This is the the full stack app.</p>
 
 <h2>Project Screenshots:</h2>
 
