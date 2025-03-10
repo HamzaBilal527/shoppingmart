@@ -1,16 +1,16 @@
 <h1 align="center" id="title">Shopping Mart</h1>
 
-<p align="center"><img src="https://i.ibb.co/1KJPsPg/shopping-mart-1.png" alt="project-image"></p>
+<p align="center"><img src="https://i.ibb.co/R4QjRTFS/shopping-mart-1.png" alt="project-image"></p>
 
 <p id="description">This project is created by using MERN Stack. This is the frontend of the full stack app.</p>
 
 <h2>Project Screenshots:</h2>
 
-<p align="center"><img src="https://i.ibb.co/VVWP61Y/shopping-mart-2.png" alt="project-screenshot"></p>
+<p align="center"><img src="https://i.ibb.co/Fq7qdcV3/shopping-mart-2.png" alt="project-screenshot"></p>
 
 <p align="center"><img src="https://i.ibb.co/NWg67sY/shopping-mart-3.png" alt="project-screenshot"></p>
 
-<p align="center"><img src="https://i.ibb.co/RHbyCbg/shopping-mart-4.png" alt="project-screenshot"></p>
+<p align="center"><img src="https://i.ibb.co/gF7hRW8W/shopping-mart-4.png" alt="project-screenshot"></p>
 
 <h2>🛠️ Installation Steps:</h2>
 
